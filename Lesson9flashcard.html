@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>第 9 课 社区网络群组让邻里感情更深厚 - 词汇学习与测试系统</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #334155;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #38bdf8;
+        }
+
+        .tab-group {
+            display: flex;
+            gap: 8px;
+            background: #1e293b;
+            padding: 4px;
+            border-radius: 12px;
+        }
+
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        .badge {
+            background: #ef4444;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            margin-left: 4px;
+        }
+
+        main {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .view-panel {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* 闪卡样式 */
+        .flashcard-container {
+            width: 100%;
+            max-width: 480px;
+            height: 310px;
+            perspective: 1000px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            border-color: #0284c7;
+        }
+
+        .card-hz {
+            font-size: 40px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 8px;
+        }
+
+        .card-py {
+            font-size: 20px;
+            color: #38bdf8;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .card-en {
+            font-size: 16px;
+            color: #cbd5e1;
+            margin-bottom: 6px;
+        }
+
+        .card-eg {
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .card-hint {
+            position: absolute;
+            bottom: 12px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* 按钮与控制 */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #334155;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-green {
+            background: #15803d;
+            border-color: #16a34a;
+        }
+        .btn-green:hover { background: #166534; }
+
+        .btn-red {
+            background: #b91c1c;
+            border-color: #dc2626;
+        }
+        .btn-red:hover { background: #991b1b; }
+
+        .btn-primary {
+            background: #0284c7;
+            border-color: #0284c7;
+        }
+        .btn-primary:hover { background: #0369a1; }
+
+        .counter {
+            font-size: 14px;
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        /* 测试模式布局 */
+        .quiz-card {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .quiz-metrics {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .question-box {
+            background: #0f172a;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            border: 1px solid #334155;
+        }
+
+        .question-hz {
+            font-size: 34px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: #e2e8f0;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: #0284c7;
+            background: #1e293b;
+        }
+
+        .option-btn.correct {
+            background: rgba(34, 197, 94, 0.15) !important;
+            border-color: #22c55e !important;
+            color: #4ade80 !important;
+            font-weight: 700;
+        }
+
+        .option-btn.wrong {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border-color: #ef4444 !important;
+            color: #f87171 !important;
+        }
+
+        .quiz-footer {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* 错题记事本面板 */
+        .mistake-list {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .mistake-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid #334155;
+        }
+        .mistake-item:last-child { border-bottom: none; }
+
+        .mistake-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .mistake-hz { font-size: 18px; font-weight: bold; color: #f8fafc; }
+        .mistake-py { font-size: 14px; color: #38bdf8; }
+        .mistake-en { font-size: 13px; color: #94a3b8; }
+
+        /* 结算视图 */
+        .result-box {
+            text-align: center;
+            padding: 32px 16px;
+        }
+
+        .score-display {
+            font-size: 48px;
+            font-weight: 800;
+            color: #38bdf8;
+            margin: 16px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>第9课 社区网络群组让邻里感情更深厚</h1>
+        <div class="tab-group">
+            <button class="tab-btn active" id="tabFlashcard">自习模式</button>
+            <button class="tab-btn" id="tabMistakes">错题本 <span class="badge" id="mistakeBadge">0</span></button>
+            <button class="tab-btn" id="tabQuiz">测试模式</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- 1. 闪卡自习模式面板 -->
+        <div class="view-panel" id="flashcardPanel">
+            <div class="flashcard-container" id="cardContainer">
+                <div class="flashcard" id="flashcard">
+                    <div class="card-face card-front">
+                        <div class="card-hz" id="fcHz">---</div>
+                        <div class="card-hint">点击卡片翻面看释义与例句</div>
+                    </div>
+                    <div class="card-face card-back">
+                        <div class="card-py" id="fcPy">---</div>
+                        <div class="card-en" id="fcEn">---</div>
+                        <div class="card-eg" id="fcEg">---</div>
+                        <div class="card-hint">点击可听标准朗读</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 闪卡基本控制 -->
+            <div class="controls">
+                <button class="btn" id="prevCardBtn">上一词</button>
+                <span class="counter" id="cardCounter">1 / 33</span>
+                <button class="btn" id="nextCardBtn">下一词</button>
+                <button class="btn btn-primary" id="speakBtn">🔊 朗读</button>
+            </div>
+
+            <!-- 自判与记错功能区 -->
+            <div class="controls" style="margin-top: 8px;">
+                <button class="btn btn-green" id="markKnownBtn">✓ 记得 / 认识</button>
+                <button class="btn btn-red" id="markMistakeBtn">✗ 不记得 (加错题本)</button>
+            </div>
+        </div>
+
+        <!-- 2. 错题本记事本面板 -->
+        <div class="view-panel hidden" id="mistakePanel">
+            <div style="width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3>记事本：复习与错题库 (<span id="mistakeCountText">0</span>)</h3>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-primary" id="reviewMistakesBtn">对错题进行闪卡练习</button>
+                    <button class="btn" id="clearMistakesBtn">清空错题本</button>
+                </div>
+            </div>
+            
+            <div class="mistake-list" id="mistakeContainer"></div>
+        </div>
+
+        <!-- 3. 测试模式面板 -->
+        <div class="view-panel hidden" id="quizPanel">
+            <div class="quiz-card" id="quizCard">
+                <div class="quiz-header">
+                    <div class="quiz-metrics">
+                        <span id="quizProgress">进度: 1 / 10</span>
+                        <span id="quizTimer">用时: 00:00</span>
+                        <span id="quizScore">得分: 0</span>
+                    </div>
+                    <button class="btn" id="soundToggleBtn">🔊 语音开</button>
+                </div>
+
+                <div class="question-box">
+                    <div class="question-hz" id="quizQuestion">---</div>
+                </div>
+
+                <!-- 选项网格（纯英文释义，不含拼音） -->
+                <div class="options-grid" id="optionsGrid"></div>
+
+                <div class="quiz-footer">
+                    <button class="btn btn-primary hidden" id="nextQuizBtn">下一题 ➔</button>
+                </div>
+            </div>
+
+            <!-- 结算卡片 -->
+            <div class="quiz-card hidden" id="resultCard">
+                <div class="result-box">
+                    <h2>测试完成！</h2>
+                    <div class="score-display" id="scoreText">0%</div>
+                    <p id="timeText" style="color:#38bdf8; font-weight: bold; margin-bottom: 8px;"></p>
+                    <p id="resultSummary" style="color:#94a3b8; margin-bottom: 24px;"></p>
+                    <button class="btn btn-primary" id="restartQuizBtn" style="margin: 0 auto;">重新开始新测试</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 第 9 课 词汇列表 (共 33 词)[cite: 22, 23]
+        const vocabList = [
+            { id: 1, hz: "移动", py: "yí dòng", en: "move", eg: "你能帮我移动那台电脑吗？" },
+            { id: 2, hz: "平台", py: "píng tái", en: "platform", eg: "这个平台不能上传视频。" },
+            { id: 3, hz: "创建", py: "chuàng jiàn", en: "create", eg: "我们居然自己创建了一个网站！" },
+            { id: 4, hz: "沟通", py: "gōu tōng", en: "communicate", eg: "你和同学们沟通得怎么样？" },
+            { id: 5, hz: "促进", py: "cù jìn", en: "promote, facilitate", eg: "这个方法真能促进学习！" },
+            { id: 6, hz: "访问", py: "fǎng wèn", en: "visit", eg: "我今天访问了一个新网站。" },
+            { id: 7, hz: "团购", py: "tuán gòu", en: "group buying", eg: "赶快加入团购，最后一天了！" },
+            { id: 8, hz: "节省", py: "jié shěng", en: "save, economize", eg: "你为什么这么节省，不喜欢花钱？" },
+            { id: 9, hz: "开销", py: "kāi xiāo", en: "expense", eg: "你每天的开销大约是多少？" },
+            { id: 10, hz: "订", py: "dìng", en: "order", eg: "这家餐厅的座位居然都订满了！" },
+            { id: 11, hz: "划算", py: "huá suàn", en: "cost-effective", eg: "这个不划算，我不想买。" },
+            { id: 12, hz: "运费", py: "yùn fèi", en: "shipping fee", eg: "这个运费比我想的还贵！" },
+            { id: 13, hz: "喜好", py: "xǐ hào", en: "preference, liking", eg: "为什么你们的喜好那么不同？" },
+            { id: 14, hz: "增进", py: "zēng jìn", en: "enhance, promote", eg: "这次旅行增进了我们的友谊！" },
+            { id: 15, hz: "家庭主妇", py: "jiā tíng zhǔ fù", en: "housewife", eg: "家庭主妇通常负责做饭和家务。" },
+            { id: 16, hz: "共享资源", py: "gòng xiǎng zī yuán", en: "shared resources", eg: "你们如何管理共享资源？" },
+            { id: 17, hz: "锯子", py: "jù zi", en: "saw", eg: "我没有锯子，不能完成这个工作。" },
+            { id: 18, hz: "偶尔", py: "ǒu ěr", en: "occasionally", eg: "我喜欢喝奶茶，但偶尔会喝咖啡。" },
+            { id: 19, hz: "生活用品", py: "shēng huó yòng pǐn", en: "daily necessities, supplies", eg: "你们别忘了带上生活用品！" },
+            { id: 20, hz: "玩具", py: "wán jù", en: "toy", eg: "你最喜欢的玩具是什么？" },
+            { id: 21, hz: "工程师", py: "gōng chéng shī", en: "engineer", eg: "这位工程师真是太厉害了！" },
+            { id: 22, hz: "通报", py: "tōng bào", en: "inform", eg: "学校发布了关于假期的通报。" },
+            { id: 23, hz: "遛", py: "liù", en: "walk (a pet)", eg: "你每天都会遛狗吗？" },
+            { id: 24, hz: "捡", py: "jiǎn", en: "tic", eg: "我把自行车捡在柱子上了。" },
+            { id: 25, hz: "留神", py: "liú shén", en: "be careful", eg: "开车时要留神红绿灯。" },
+            { id: 26, hz: "踪影", py: "zōng yǐng", en: "track", eg: "你有没有看到他的踪影？" },
+            { id: 27, hz: "未必", py: "wèi bì", en: "not necessarily", eg: "未必你能做到，试试看！" },
+            { id: 28, hz: "留意", py: "liú yì", en: "pay attention", eg: "我没有留意到那条信息。" },
+            { id: 29, hz: "弊端", py: "bì duān", en: "drawback", eg: "我们需要解决这些弊端！" },
+            { id: 30, hz: "整体", py: "zhěng tǐ", en: "whole, entirety", eg: "你觉得整体情况怎么样？" },
+            { id: 31, hz: "仍", py: "réng", en: "still", eg: "我不再生气了，但他仍不道歉。" },
+            { id: 32, hz: "利大于弊", py: "lì dà yú bì", en: "the pros outweigh the cons", eg: "我不觉得使用AI写作利大于弊。" },
+            { id: 33, hz: "归属感", py: "guī shǔ gǎn", en: "sense of belonging", eg: "归属感让人更快乐、更安心。" }
+        ];
+
+        // 全局状态
+        let currentDeck = [...vocabList];
+        let fcIndex = 0;
+        let mistakes = [];
+
+        // TTS 发音函数
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(text);
+                u.lang = 'zh-CN';
+                window.speechSynthesis.speak(u);
+            }
+        }
+
+        // --- 1. 闪卡逻辑 ---
+        const flashcard = document.getElementById('flashcard');
+        const fcHz = document.getElementById('fcHz');
+        const fcPy = document.getElementById('fcPy');
+        const fcEn = document.getElementById('fcEn');
+        const fcEg = document.getElementById('fcEg');
+        const cardCounter = document.getElementById('cardCounter');
+
+        function updateFlashcard() {
+            flashcard.classList.remove('flipped');
+            if (currentDeck.length === 0) {
+                fcHz.textContent = "暂无词汇";
+                fcPy.textContent = "";
+                fcEn.textContent = "";
+                fcEg.textContent = "";
+                cardCounter.textContent = "0 / 0";
+                return;
+            }
+            const item = currentDeck[fcIndex];
+            fcHz.textContent = item.hz;
+            fcPy.textContent = item.py;
+            fcEn.textContent = item.en;
+            fcEg.textContent = `例句：${item.eg}`;
+            cardCounter.textContent = `${fcIndex + 1} / ${currentDeck.length}`;
+        }
+
+        document.getElementById('cardContainer').addEventListener('click', () => {
+            if (currentDeck.length === 0) return;
+            flashcard.classList.toggle('flipped');
+            if (flashcard.classList.contains('flipped')) {
+                speak(currentDeck[fcIndex].hz);
+            }
+        });
+
+        document.getElementById('prevCardBtn').addEventListener('click', () => {
+            if (currentDeck.length === 0) return;
+            fcIndex = (fcIndex - 1 + currentDeck.length) % currentDeck.length;
+            updateFlashcard();
+        });
+
+        document.getElementById('nextCardBtn').addEventListener('click', () => {
+            if (currentDeck.length === 0) return;
+            fcIndex = (fcIndex + 1) % currentDeck.length;
+            updateFlashcard();
+        });
+
+        document.getElementById('speakBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentDeck.length > 0) speak(currentDeck[fcIndex].hz);
+        });
+
+        // 自判按钮逻辑
+        document.getElementById('markKnownBtn').addEventListener('click', () => {
+            if (currentDeck.length === 0) return;
+            fcIndex = (fcIndex + 1) % currentDeck.length;
+            updateFlashcard();
+        });
+
+        document.getElementById('markMistakeBtn').addEventListener('click', () => {
+            if (currentDeck.length === 0) return;
+            const currentItem = currentDeck[fcIndex];
+            if (!mistakes.some(m => m.id === currentItem.id)) {
+                mistakes.push(currentItem);
+                updateMistakeUI();
+            }
+            fcIndex = (fcIndex + 1) % currentDeck.length;
+            updateFlashcard();
+        });
+
+        // --- 2. 错题本逻辑 ---
+        function updateMistakeUI() {
+            document.getElementById('mistakeBadge').textContent = mistakes.length;
+            document.getElementById('mistakeCountText').textContent = mistakes.length;
+            
+            const container = document.getElementById('mistakeContainer');
+            container.innerHTML = '';
+
+            if (mistakes.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#64748b; padding:20px;">错题本为空，太棒了！</p>';
+                return;
+            }
+
+            mistakes.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'mistake-item';
+                div.innerHTML = `
+                    <div class="mistake-info">
+                        <span class="mistake-hz">${item.hz}</span>
+                        <span class="mistake-py">${item.py}</span>
+                        <span class="mistake-en">${item.en}</span>
+                    </div>
+                    <button class="btn" onclick="removeMistake(${item.id})">移除</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        window.removeMistake = function(id) {
+            mistakes = mistakes.filter(m => m.id !== id);
+            updateMistakeUI();
+        };
+
+        document.getElementById('clearMistakesBtn').addEventListener('click', () => {
+            mistakes = [];
+            updateMistakeUI();
+        });
+
+        document.getElementById('reviewMistakesBtn').addEventListener('click', () => {
+            if (mistakes.length === 0) {
+                alert("错题本为空！");
+                return;
+            }
+            currentDeck = [...mistakes];
+            fcIndex = 0;
+            switchTab('flashcard');
+            updateFlashcard();
+        });
+
+        // --- 3. 视图导航切换 ---
+        const tabFlashcard = document.getElementById('tabFlashcard');
+        const tabMistakes = document.getElementById('tabMistakes');
+        const tabQuiz = document.getElementById('tabQuiz');
+        
+        const flashcardPanel = document.getElementById('flashcardPanel');
+        const mistakePanel = document.getElementById('mistakePanel');
+        const quizPanel = document.getElementById('quizPanel');
+
+        function switchTab(tabName) {
+            [tabFlashcard, tabMistakes, tabQuiz].forEach(t => t.classList.remove('active'));
+            [flashcardPanel, mistakePanel, quizPanel].forEach(p => p.classList.add('hidden'));
+
+            if (tabName === 'flashcard') {
+                tabFlashcard.classList.add('active');
+                flashcardPanel.classList.remove('hidden');
+            } else if (tabName === 'mistakes') {
+                tabMistakes.classList.add('active');
+                mistakePanel.classList.remove('hidden');
+                updateMistakeUI();
+            } else if (tabName === 'quiz') {
+                tabQuiz.classList.add('active');
+                quizPanel.classList.remove('hidden');
+                initQuiz();
+            }
+        }
+
+        tabFlashcard.addEventListener('click', () => {
+            currentDeck = [...vocabList];
+            switchTab('flashcard');
+            updateFlashcard();
+        });
+        tabMistakes.addEventListener('click', () => switchTab('mistakes'));
+        tabQuiz.addEventListener('click', () => switchTab('quiz'));
+
+        // --- 4. 测试模式逻辑 ---
+        let quizQuestions = [];
+        let currentQuizIndex = 0;
+        let score = 0;
+        let isSoundOn = true;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+
+        const soundToggleBtn = document.getElementById('soundToggleBtn');
+        soundToggleBtn.addEventListener('click', () => {
+            isSoundOn = !isSoundOn;
+            soundToggleBtn.textContent = isSoundOn ? "🔊 语音开" : "🔇 语音关";
+        });
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            secondsElapsed = 0;
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+            const secs = String(secondsElapsed % 60).padStart(2, '0');
+            document.getElementById('quizTimer').textContent = `用时: ${mins}:${secs}`;
+        }
+
+        function initQuiz() {
+            const shuffled = [...vocabList].sort(() => 0.5 - Math.random());
+            quizQuestions = shuffled.slice(0, 10);
+            currentQuizIndex = 0;
+            score = 0;
+
+            document.getElementById('quizCard').classList.remove('hidden');
+            document.getElementById('resultCard').classList.add('hidden');
+            document.getElementById('quizScore').textContent = `得分: ${score}`;
+            
+            startTimer();
+            renderQuizQuestion();
+        }
+
+        function renderQuizQuestion() {
+            const current = quizQuestions[currentQuizIndex];
+            document.getElementById('quizProgress').textContent = `进度: ${currentQuizIndex + 1} / ${quizQuestions.length}`;
+            document.getElementById('quizQuestion').textContent = current.hz;
+
+            if (isSoundOn) {
+                speak(current.hz);
+            }
+
+            let distractors = vocabList.filter(item => item.hz !== current.hz);
+            distractors = distractors.sort(() => 0.5 - Math.random()).slice(0, 3);
+            const options = [...distractors, current].sort(() => 0.5 - Math.random());
+
+            const optionsGrid = document.getElementById('optionsGrid');
+            optionsGrid.innerHTML = '';
+            document.getElementById('nextQuizBtn').classList.add('hidden');
+
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt.en;
+                
+                btn.addEventListener('click', () => handleOptionClick(btn, opt, current));
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function handleOptionClick(selectedBtn, selectedOpt, correctOpt) {
+            const buttons = document.querySelectorAll('.option-btn');
+            buttons.forEach(btn => btn.disabled = true);
+
+            if (selectedOpt.hz === correctOpt.hz) {
+                selectedBtn.classList.add('correct');
+                score += 10;
+                document.getElementById('quizScore').textContent = `得分: ${score}`;
+            } else {
+                selectedBtn.classList.add('wrong');
+                buttons.forEach(btn => {
+                    if (btn.textContent === correctOpt.en) {
+                        btn.classList.add('correct');
+                    }
+                });
+                if (!mistakes.some(m => m.id === correctOpt.id)) {
+                    mistakes.push(correctOpt);
+                    updateMistakeUI();
+                }
+            }
+
+            document.getElementById('nextQuizBtn').classList.remove('hidden');
+        }
+
+        document.getElementById('nextQuizBtn').addEventListener('click', () => {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizQuestions.length) {
+                renderQuizQuestion();
+            } else {
+                finishQuiz();
+            }
+        });
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            document.getElementById('quizCard').classList.add('hidden');
+            document.getElementById('resultCard').classList.remove('hidden');
+
+            const percentage = Math.round((score / (quizQuestions.length * 10)) * 100);
+            document.getElementById('scoreText').textContent = `${percentage}%`;
+            
+            const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+            const secs = String(secondsElapsed % 60).padStart(2, '0');
+            document.getElementById('timeText').textContent = `总耗时: ${mins} 分 ${secs} 秒`;
+            document.getElementById('resultSummary').textContent = `您一共获得 ${score} 分（答对 ${score/10} / ${quizQuestions.length} 题）`;
+        }
+
+        document.getElementById('restartQuizBtn').addEventListener('click', initQuiz);
+
+        // 初始化运行
+        updateFlashcard();
+    </script>
+</body>
+</html>
