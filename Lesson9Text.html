@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>线上练习朗读 - 社区网络群组让邻里关系更亲密</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Serif SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            600: '#0369a1',
+                            700: '#075985',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Noto Serif SC', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        
+        .pinyin-text {
+            font-size: 0.75em;
+            line-height: 1.2;
+            color: #0284c7;
+            display: block;
+            font-weight: 500;
+        }
+        
+        .ruby-item {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: bottom;
+            margin: 0 1px;
+        }
+
+        .highlight-active {
+            background-color: #fef08a;
+            border-radius: 4px;
+            box-shadow: 0 0 0 2px #fef08a;
+            transition: all 0.2s ease;
+        }
+
+        .pulse-recording {
+            animation: pulse-red 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col justify-between selection:bg-sky-200">
+
+    <!-- Header Section -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-500 text-white p-2 rounded-xl flex items-center justify-center w-10 h-10 shadow-md">
+                    <i class="fa-solid font-bold text-lg fa-book-open"></i>
+                </div>
+                <div>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md border border-brand-100">华文伴我行 课文</span>
+                    <h1 class="text-lg md:text-xl font-bold text-slate-900 leading-tight">线上练习朗读</h1>
+                </div>
+            </div>
+
+            <!-- Toolbar Controls -->
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <!-- Pinyin Switch -->
+                <button id="toggle-pinyin-btn" onclick="togglePinyin()" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 text-sm font-medium transition">
+                    <i class="fa-solid fa-language text-brand-500"></i>
+                    <span>拼音显示</span>
+                    <span id="pinyin-status-badge" class="ml-1 text-xs px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded-full font-bold">开启</span>
+                </button>
+
+                <!-- Font Size Controls -->
+                <div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+                    <button onclick="changeFontSize(-1)" class="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-white rounded hover:shadow-xs font-bold text-sm" title="缩小字体">A-</button>
+                    <span id="font-size-display" class="px-2 text-xs font-semibold text-slate-500 min-w-[3rem] text-center">标准</span>
+                    <button onclick="changeFontSize(1)" class="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-white rounded hover:shadow-xs font-bold text-sm" title="放大字体">A+</button>
+                </div>
+
+                <!-- Tips Modal Button -->
+                <button onclick="toggleModal('tips-modal')" class="p-2 text-slate-500 hover:text-brand-600 rounded-lg hover:bg-slate-100" title="朗读技巧提示">
+                    <i class="fa-regular fa-circle-question text-lg"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-5xl w-full mx-auto px-4 py-6 flex-grow grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left Column: Reading Area (2 cols on large screen) -->
+        <section class="lg:col-span-2 space-y-6">
+            
+            <!-- Article Card -->
+            <div class="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-slate-200">
+                
+                <!-- Article Title & Meta -->
+                <div class="border-b border-slate-100 pb-5 mb-6 text-center">
+                    <h2 class="text-2xl md:text-3xl font-bold font-serif text-slate-900 mb-2">
+                        《社区网络群组让邻里关系更亲密》
+                    </h2>
+                    <p class="text-sm text-slate-500 flex items-center justify-center space-x-4">
+                        <span><i class="fa-regular fa-clock mr-1"></i>建议朗读时长: 2 - 3 分钟</span>
+                        <span><i class="fa-solid fa-layer-group mr-1"></i>共 4 段落</span>
+                    </p>
+                </div>
+
+                <!-- Reading Passage Box -->
+                <div id="article-content" class="space-y-6 leading-relaxed font-serif text-lg text-slate-800 transition-all duration-200">
+                    
+                    <!-- Paragraph 1 -->
+                    <p id="para-0" class="paragraph-box p-3 rounded-xl transition duration-200 border border-transparent hover:border-slate-200 cursor-pointer" onclick="selectParagraph(0)">
+                        <span class="para-badge text-xs font-sans text-brand-600 bg-brand-50 px-2 py-0.5 rounded font-bold mr-2 select-none">第一段</span>
+                        <span class="sentence">近年来，</span><span class="sentence">随着智能手机和各类社交平台的普及，</span><span class="sentence">不少居民开始自发建立“社区网络群组”。</span><span class="sentence">大家在群组里分享生活资讯、</span><span class="sentence">互相帮忙，</span><span class="sentence">使原本互不相识的邻居逐渐熟悉起来，</span><span class="sentence">拉近了彼此的距离。</span>
+                    </p>
+
+                    <!-- Paragraph 2 -->
+                    <p id="para-1" class="paragraph-box p-3 rounded-xl transition duration-200 border border-transparent hover:border-slate-200 cursor-pointer" onclick="selectParagraph(1)">
+                        <span class="para-badge text-xs font-sans text-brand-600 bg-brand-50 px-2 py-0.5 rounded font-bold mr-2 select-none">第二段</span>
+                        <span class="sentence">社区群组为居民提供了极大的便利。</span><span class="sentence">比如，当有人需要借用修缮工具、</span><span class="sentence">寻找走失的宠物，</span><span class="sentence">或者询问附近的商家营业时间时，</span><span class="sentence">只需在群组发一条消息，</span><span class="sentence">很快就能得到热心邻居的回复与支援。</span><span class="sentence">这种互助互利的氛围，</span><span class="sentence">让大家感到了社区的温暖。</span>
+                    </p>
+
+                    <!-- Paragraph 3 -->
+                    <p id="para-2" class="paragraph-box p-3 rounded-xl transition duration-200 border border-transparent hover:border-slate-200 cursor-pointer" onclick="selectParagraph(2)">
+                        <span class="para-badge text-xs font-sans text-brand-600 bg-brand-50 px-2 py-0.5 rounded font-bold mr-2 select-none">第三段</span>
+                        <span class="sentence">此外，</span><span class="sentence">群组也是组织邻里活动的重要桥梁。</span><span class="sentence">无论是节庆聚会、</span><span class="sentence">二手物品交换，</span><span class="sentence">还是环保清洁运动，</span><span class="sentence">居民都能通过群组迅速响应并踊跃参与。</span><span class="sentence">这不仅丰富了社区的生活，</span><span class="sentence">也增进了邻里之间的信任与友谊。</span>
+                    </p>
+
+                    <!-- Paragraph 4 -->
+                    <p id="para-3" class="paragraph-box p-3 rounded-xl transition duration-200 border border-transparent hover:border-slate-200 cursor-pointer" onclick="selectParagraph(3)">
+                        <span class="para-badge text-xs font-sans text-brand-600 bg-brand-50 px-2 py-0.5 rounded font-bold mr-2 select-none">第四段</span>
+                        <span class="sentence">总而言之，</span><span class="sentence">社区网络群组就像一条无形的纽带，</span><span class="sentence">打破了都市高楼大厦之间的冷漠墙壁。</span><span class="sentence">只要居民们心怀善意、</span><span class="sentence">文明沟通，</span><span class="sentence">科技便能让传统的“远亲不如近邻”精神在数字时代重焕生机。</span>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Interactive Practice Tools -->
+        <section class="space-y-6">
+
+            <!-- Tool 1: TTS Standard Demonstration Player -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-circle-play text-brand-500"></i>
+                        <span>标准示范朗读 (TTS)</span>
+                    </h3>
+                    <span id="tts-status" class="text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500">空闲</span>
+                </div>
+
+                <!-- TTS Audio Controls -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-center space-x-3">
+                        <button id="btn-play-tts" onclick="startTTS()" class="w-12 h-12 bg-brand-500 hover:bg-brand-600 text-white rounded-full flex items-center justify-center shadow-lg transition active:scale-95">
+                            <i class="fa-solid fa-play text-lg ml-0.5"></i>
+                        </button>
+                        <button id="btn-pause-tts" onclick="pauseTTS()" class="w-10 h-10 bg-amber-500 hover:bg-amber-600 text-white rounded-full flex items-center justify-center shadow transition active:scale-95 hidden">
+                            <i class="fa-solid fa-pause"></i>
+                        </button>
+                        <button onclick="stopTTS()" class="w-10 h-10 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full flex items-center justify-center transition active:scale-95" title="重置">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+
+                    <!-- Speed Control slider -->
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-2">
+                        <div class="flex justify-between text-xs text-slate-500">
+                            <span>朗读语速</span>
+                            <span id="speed-val" class="font-bold text-brand-600">1.0x</span>
+                        </div>
+                        <input type="range" id="speed-slider" min="0.7" max="1.3" step="0.1" value="1.0" oninput="updateSpeedDisplay(this.value)" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-500">
+                    </div>
+
+                    <!-- Current Reading Status Indicator -->
+                    <div class="text-xs text-slate-500 bg-slate-50 p-2.5 rounded-lg flex items-center justify-between border border-slate-100">
+                        <span>正在示范段落：</span>
+                        <span id="current-reading-target" class="font-semibold text-slate-700">全文连读</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool 2: Voice Recorder for Student Practice -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                        <i class="fa-solid fa-microphone text-rose-500"></i>
+                        <span>学生录音与自我回放</span>
+                    </h3>
+                    <span id="rec-timer" class="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded text-slate-600">00:00</span>
+                </div>
+
+                <!-- Recording Status Visualizer Box -->
+                <div class="border border-dashed border-slate-300 rounded-xl p-4 text-center bg-slate-50 mb-4 flex flex-col items-center justify-center min-h-[110px]">
+                    <div id="rec-indicator" class="w-12 h-12 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mb-2">
+                        <i class="fa-solid fa-microphone text-xl"></i>
+                    </div>
+                    <p id="rec-status-text" class="text-xs font-medium text-slate-500">点击下方“开始录音”按钮进行练习</p>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="btn-start-rec" onclick="toggleRecording()" class="col-span-2 py-2.5 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium shadow-md flex items-center justify-center space-x-2 transition active:scale-95">
+                        <i class="fa-solid fa-circle"></i>
+                        <span id="rec-btn-text">开始录音</span>
+                    </button>
+                    
+                    <!-- Audio Playback Controls (Disabled initially) -->
+                    <button id="btn-play-user-audio" onclick="playUserRecording()" disabled class="py-2 px-3 bg-slate-100 text-slate-400 rounded-xl font-medium flex items-center justify-center space-x-1.5 cursor-not-allowed transition">
+                        <i class="fa-solid fa-play"></i>
+                        <span>回放录音</span>
+                    </button>
+
+                    <a id="btn-download-audio" disabled class="py-2 px-3 bg-slate-100 text-slate-400 rounded-xl font-medium flex items-center justify-center space-x-1.5 cursor-not-allowed transition text-center">
+                        <i class="fa-solid fa-download"></i>
+                        <span>下载音频</span>
+                    </a>
+                </div>
+
+                <!-- Hidden Audio Element for playback -->
+                <audio id="user-audio-player" class="hidden"></audio>
+            </div>
+
+            <!-- Tool 3: Vocabulary & Key Phrases -->
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+                <h3 class="font-bold text-slate-900 flex items-center space-x-2">
+                    <i class="fa-solid fa-bookmark text-amber-500"></i>
+                    <span>课文核心词汇指南</span>
+                </h3>
+                
+                <div class="space-y-2 text-xs">
+                    <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 hover:border-amber-200 transition">
+                        <div class="flex justify-between font-bold text-slate-800">
+                            <span>普及 (pǔ jí)</span>
+                            <span class="text-amber-600 font-normal">动词</span>
+                        </div>
+                        <p class="text-slate-500 mt-1">普遍推广，使大众化。例如：智能手机的普及。</p>
+                    </div>
+
+                    <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 hover:border-amber-200 transition">
+                        <div class="flex justify-between font-bold text-slate-800">
+                            <span>修缮 (xiū shàn)</span>
+                            <span class="text-amber-600 font-normal">动词</span>
+                        </div>
+                        <p class="text-slate-500 mt-1">修理整治（房屋、工具等设备）。</p>
+                    </div>
+
+                    <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 hover:border-amber-200 transition">
+                        <div class="flex justify-between font-bold text-slate-800">
+                            <span>纽带 (niǔ dài)</span>
+                            <span class="text-amber-600 font-normal">名词</span>
+                        </div>
+                        <p class="text-slate-500 mt-1">比喻起联系作用的人或事物。</p>
+                    </div>
+
+                    <div class="p-2.5 bg-slate-50 rounded-lg border border-slate-100 hover:border-amber-200 transition">
+                        <div class="flex justify-between font-bold text-slate-800">
+                            <span>重焕生机 (chóng huàn shēng jī)</span>
+                            <span class="text-amber-600 font-normal">成语/短语</span>
+                        </div>
+                        <p class="text-slate-500 mt-1">重新散发或展现出生命活力与生机。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 mt-8">
+        <div class="max-w-5xl mx-auto px-4 text-center text-xs text-slate-400">
+            《华文伴我行》 邻里关系主题 - 互动朗读辅助教学工具 &copy; 2026
+        </div>
+    </footer>
+
+    <!-- Reading Tips Modal Popup -->
+    <div id="tips-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl relative animate-fade-in">
+            <button onclick="toggleModal('tips-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 text-lg">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 class="text-lg font-bold text-slate-900 mb-3 flex items-center space-x-2">
+                <i class="fa-solid fa-lightbulb text-amber-500"></i>
+                <span>朗读评分与表达技巧</span>
+            </h3>
+            <ul class="space-y-3 text-sm text-slate-600 list-disc list-inside leading-relaxed">
+                <li><strong class="text-slate-800">字音吐字准确：</strong> 注意前后鼻音（如：更 gèng、邻 lín）及轻声变调。</li>
+                <li><strong class="text-slate-800">停顿与节奏：</strong> 标点符号处自然停顿，句子较长时在主谓语或修饰语后适当停顿。</li>
+                <li><strong class="text-slate-800">情感表达：</strong> 结合“邻里温情”与“科技结合”的关怀之情，语调亲切自然、充满信心。</li>
+                <li><strong class="text-slate-800">语速控制：</strong> 不宜过快或过慢，保持匀速流畅。</li>
+            </ul>
+            <button onclick="toggleModal('tips-modal')" class="mt-5 w-full py-2 bg-brand-500 hover:bg-brand-600 text-white font-medium rounded-xl transition">
+                知道了
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Pinyin Dataset Mapping for paragraphs
+        const pinyinData = [
+            [
+                ["近年来，", "jìn nián lái ，"],
+                ["随着", "suí zhe"],
+                ["智能", "zhì néng"],
+                ["手机", "shǒu jī"],
+                ["和", "hé"],
+                ["各类", "gè lèi"],
+                ["社交", "shè jiāo"],
+                ["平台的", "píng tái de"],
+                ["普及，", "pǔ jí ，"],
+                ["不少", "bù shǎo"],
+                ["居民", "jū mín"],
+                ["开始", "kāi shǐ"],
+                ["自发", "zì fā"],
+                ["建立", "jiàn lì"],
+                ["“社区", "“ shè qū"],
+                ["网络", "wǎng luò"],
+                ["群组”。", "qún zǔ ” 。"],
+                ["大家", "dà jiā"],
+                ["在群组里", "zài qún zǔ lǐ"],
+                ["分享", "fēn xiǎng"],
+                ["生活", "shēng huó"],
+                ["资讯、", "zī xùn 、"],
+                ["互相", "hù xiāng"],
+                ["帮忙，", "bāng máng ，"],
+                ["使", "shǐ"],
+                ["原本", "yuán běn"],
+                ["互不相识的", "hù bù xiāng shí de"],
+                ["邻居", "lín jū"],
+                ["逐渐", "zhú jiàn"],
+                ["熟悉", "shú xī"],
+                ["起来，", "qǐ lái ，"],
+                ["拉近了", "lā jìn le"],
+                ["彼此的", "bǐ cǐ de"],
+                ["距离。", "jù lí 。"]
+            ],
+            [
+                ["社区", "shè qū"],
+                ["群组", "qún zǔ"],
+                ["为居民", "wèi jū mín"],
+                ["提供了", "tí gōng le"],
+                ["极大的", "jí dà de"],
+                ["便利。", "biàn lì 。"],
+                ["比如，", "bǐ rú ，"],
+                ["当有人", "dāng yǒu rén"],
+                ["需要", "xū yào"],
+                ["借用", "jiè yòng"],
+                ["修缮", "xiū shàn"],
+                ["工具、", "gōng jù 、"],
+                ["寻找", "xún zhǎo"],
+                ["走失的", "zǒu shī de"],
+                ["宠物，", "chǒng wù ，"],
+                ["或者", "huò zhě"],
+                ["询问", "xún wèn"],
+                ["附近的", "fù jìn de"],
+                ["商家", "shāng jiā"],
+                ["营业", "yíng yè"],
+                ["时间时，", "shí jiān shí ，"],
+                ["只需", "zhǐ xū"],
+                ["在群组", "zài qún zǔ"],
+                ["发一条", "fā yī tiáo"],
+                ["消息，", "xiāo xi ，"],
+                ["很快", "hěn kuài"],
+                ["就能", "jiù néng"],
+                ["得到", "dé dào"],
+                ["热心", "rè xīn"],
+                ["邻居的", "lín jū de"],
+                ["回复与", "huí fù yǔ"],
+                ["支援。", "zhī yuán 。"],
+                ["这种", "zhè zhǒng"],
+                ["互助", "hù zhù"],
+                ["互利的", "hù lì de"],
+                ["氛围，", "fēn wéi ，"],
+                ["让大家", "ràng dà jiā"],
+                ["感到了", "gǎn dào le"],
+                ["社区的", "shè qū de"],
+                ["温暖。", "wēn nuǎn 。"]
+            ],
+            [
+                ["此外，", "cǐ wài ，"],
+                ["群组", "qún zǔ"],
+                ["也是", "yě shì"],
+                ["组织", "zǔ zhī"],
+                ["邻里", "lín lǐ"],
+                ["活动", "huó dòng"],
+                ["的重要", "de zhòng yào"],
+                ["桥梁。", "qiáo liáng 。"],
+                ["无论是", "wú lùn shì"],
+                ["节庆", "jié qìng"],
+                ["聚会、", "jù huì 、"],
+                ["二手", "èr shǒu"],
+                ["物品", "wù pǐn"],
+                ["交换，", "jiāo huàn ，"],
+                ["还是", "hái shì"],
+                ["环保", "huán bǎo"],
+                ["清洁", "qīng jié"],
+                ["运动，", "yùn dòng ，"],
+                ["居民", "jū mín"],
+                ["都能", "dōu néng"],
+                ["通过", "tōng guò"],
+                ["群组", "qún zǔ"],
+                ["迅速", "xùn sù"],
+                ["响应", "xiǎng yìng"],
+                ["并", "bìng"],
+                ["踊跃", "yǒng yuè"],
+                ["参与。", "cān yù 。"],
+                ["这不仅", "zhè bù jǐn"],
+                ["丰富了", "fēng fù le"],
+                ["社区的", "shè qū de"],
+                ["生活，", "shēng huó ，"],
+                ["也增进了", "yě zēng jìn le"],
+                ["邻里", "lín lǐ"],
+                ["之间的", "zhī jiān de"],
+                ["信任与", "xìn rèn yǔ"],
+                ["友谊。", "yǒu yì 。"]
+            ],
+            [
+                ["总而言之，", "zǒng ér yán zhī ，"],
+                ["社区", "shè qū"],
+                ["网络", "wǎng luò"],
+                ["群组", "qún zǔ"],
+                ["就像", "jiù xiàng"],
+                ["一条", "yī tiáo"],
+                ["无形的", "wú xíng de"],
+                ["纽带，", "niǔ dài ，"],
+                ["打破了", "dǎ pò le"],
+                ["都市", "dū shì"],
+                ["高楼大厦", "gāo lóu dà shà"],
+                ["之间的", "zhī jiān de"],
+                ["冷漠", "lěng mò"],
+                ["墙壁。", "qiáng bì 。"],
+                ["只要", "zhǐ yào"],
+                ["居民们", "jū mín men"],
+                ["心怀", "xīn huái"],
+                ["善意、", "shàn yì 、"],
+                ["文明", "wén míng"],
+                ["沟通，", "gōu tōng ，"],
+                ["科技", "kē jì"],
+                ["便能", "biàn néng"],
+                ["让传统的", "ràng chuán tǒng de"],
+                ["“远亲", "“ yuǎn qīn"],
+                ["不如", "bù rú"],
+                ["近邻”", "jìn lín ”"],
+                ["精神在", "jīng shén zài"],
+                ["数字", "shù zì"],
+                ["时代", "shí dài"],
+                ["重焕", "chóng huàn"],
+                ["生机。", "shēng jī 。"]
+            ]
+        ];
+
+        // State variables
+        let isPinyinVisible = true;
+        let currentFontSizeLevel = 1; // 0: Small, 1: Normal, 2: Large, 3: Extra Large
+        const fontClasses = ['text-base', 'text-lg', 'text-xl', 'text-2xl'];
+        const fontLabels = ['较小', '标准', '较大', '特大'];
+
+        let selectedParagraphIndex = null;
+        let synth = window.speechSynthesis;
+        let currentUtterance = null;
+        let ttsSpeed = 1.0;
+
+        // Recording state
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let recordedAudioBlob = null;
+        let isRecording = false;
+        let recTimerInterval = null;
+        let recordSeconds = 0;
+
+        // On DOM Loaded Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPinyinContent();
+        });
+
+        // Render HTML with Pinyin Ruby Structures
+        function renderPinyinContent() {
+            pinyinData.forEach((paraTokens, pIdx) => {
+                const paraElem = document.getElementById(`para-${pIdx}`);
+                const badgeHtml = `<span class="para-badge text-xs font-sans text-brand-600 bg-brand-50 px-2 py-0.5 rounded font-bold mr-2 select-none">第${['一','二','三','四'][pIdx]}段</span>`;
+                
+                let compiledHtml = badgeHtml;
+                paraTokens.forEach(([hanzi, py]) => {
+                    compiledHtml += `
+                        <span class="ruby-item">
+                            <span class="pinyin-text ${isPinyinVisible ? '' : 'hidden'}">${py}</span>
+                            <span class="hanzi-text">${hanzi}</span>
+                        </span>
+                    `;
+                });
+                paraElem.innerHTML = compiledHtml;
+            });
+        }
+
+        // Toggle Pinyin Display
+        function togglePinyin() {
+            isPinyinVisible = !isPinyinVisible;
+            const pinyinElements = document.querySelectorAll('.pinyin-text');
+            const badge = document.getElementById('pinyin-status-badge');
+            
+            pinyinElements.forEach(el => {
+                if (isPinyinVisible) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            });
+
+            if (isPinyinVisible) {
+                badge.innerText = '开启';
+                badge.className = 'ml-1 text-xs px-1.5 py-0.2 bg-emerald-100 text-emerald-700 rounded-full font-bold';
+            } else {
+                badge.innerText = '关闭';
+                badge.className = 'ml-1 text-xs px-1.5 py-0.2 bg-slate-200 text-slate-600 rounded-full font-bold';
+            }
+        }
+
+        // Font Size Adjuster
+        function changeFontSize(delta) {
+            const container = document.getElementById('article-content');
+            // Remove existing font class
+            container.classList.remove(fontClasses[currentFontSizeLevel]);
+            
+            // Calculate new level
+            currentFontSizeLevel = Math.max(0, Math.min(fontClasses.length - 1, currentFontSizeLevel + delta));
+            
+            // Add new font class
+            container.classList.add(fontClasses[currentFontSizeLevel]);
+            document.getElementById('font-size-display').innerText = fontLabels[currentFontSizeLevel];
+        }
+
+        // Select Specific Paragraph for focus
+        function selectParagraph(index) {
+            const paragraphs = document.querySelectorAll('.paragraph-box');
+            
+            if (selectedParagraphIndex === index) {
+                // Deselect if already selected
+                selectedParagraphIndex = null;
+                paragraphs.forEach(p => p.classList.remove('highlight-active'));
+                document.getElementById('current-reading-target').innerText = '全文连读';
+            } else {
+                selectedParagraphIndex = index;
+                paragraphs.forEach((p, idx) => {
+                    if (idx === index) {
+                        p.classList.add('highlight-active');
+                    } else {
+                        p.classList.remove('highlight-active');
+                    }
+                });
+                document.getElementById('current-reading-target').innerText = `第 ${index + 1} 段`;
+            }
+        }
+
+        // Speech Synthesis (TTS) Controls
+        function updateSpeedDisplay(val) {
+            ttsSpeed = parseFloat(val);
+            document.getElementById('speed-val').innerText = `${ttsSpeed.toFixed(1)}x`;
+        }
+
+        function getFullTextToRead() {
+            if (selectedParagraphIndex !== null) {
+                const pElem = document.getElementById(`para-${selectedParagraphIndex}`);
+                return getParagraphCleanText(pElem);
+            }
+            // All text
+            let fullText = '';
+            for (let i = 0; i < 4; i++) {
+                const pElem = document.getElementById(`para-${i}`);
+                fullText += getParagraphCleanText(pElem) + ' ';
+            }
+            return fullText;
+        }
+
+        function getParagraphCleanText(pElem) {
+            const hanziList = pElem.querySelectorAll('.hanzi-text');
+            let text = '';
+            hanziList.forEach(h => text += h.innerText);
+            return text;
+        }
+
+        function startTTS() {
+            if (!synth) {
+                alert('您的浏览器不支持语音合成功能。');
+                return;
+            }
+
+            if (synth.paused) {
+                synth.resume();
+                toggleTTSButtons(true);
+                return;
+            }
+
+            synth.cancel(); // Stop any previous ongoing speech
+
+            const text = getFullTextToRead();
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'zh-CN'; // Set Chinese mandarin voice
+            currentUtterance.rate = ttsSpeed;
+
+            currentUtterance.onstart = () => {
+                document.getElementById('tts-status').innerText = '正在朗读...';
+                document.getElementById('tts-status').className = 'text-xs px-2 py-0.5 rounded bg-brand-100 text-brand-700 font-bold';
+                toggleTTSButtons(true);
+            };
+
+            currentUtterance.onend = () => {
+                resetTTSStatus();
+            };
+
+            currentUtterance.onerror = () => {
+                resetTTSStatus();
+            };
+
+            synth.speak(currentUtterance);
+        }
+
+        function pauseTTS() {
+            if (synth && synth.speaking) {
+                synth.pause();
+                document.getElementById('tts-status').innerText = '已暂停';
+                document.getElementById('tts-status').className = 'text-xs px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-bold';
+                toggleTTSButtons(false);
+            }
+        }
+
+        function stopTTS() {
+            if (synth) {
+                synth.cancel();
+                resetTTSStatus();
+            }
+        }
+
+        function resetTTSStatus() {
+            document.getElementById('tts-status').innerText = '空闲';
+            document.getElementById('tts-status').className = 'text-xs px-2 py-0.5 rounded bg-slate-100 text-slate-500';
+            toggleTTSButtons(false);
+        }
+
+        function toggleTTSButtons(isPlaying) {
+            const playBtn = document.getElementById('btn-play-tts');
+            const pauseBtn = document.getElementById('btn-pause-tts');
+            if (isPlaying) {
+                playBtn.classList.add('hidden');
+                pauseBtn.classList.remove('hidden');
+            } else {
+                playBtn.classList.remove('hidden');
+                pauseBtn.classList.add('hidden');
+            }
+        }
+
+        // Voice Recording Logic (MediaRecorder API)
+        async function toggleRecording() {
+            if (!isRecording) {
+                // Start Recording
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        recordedAudioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                        const audioUrl = URL.createObjectURL(recordedAudioBlob);
+                        const player = document.getElementById('user-audio-player');
+                        player.src = audioUrl;
+
+                        // Enable playback & download buttons
+                        enableAudioControls(audioUrl);
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    updateRecordingUI(true);
+                    startRecTimer();
+                } catch (err) {
+                    alert('无法获取麦克风权限，请检查麦克风设置。');
+                    console.error(err);
+                }
+            } else {
+                // Stop Recording
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                    // Stop media stream tracks
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+                isRecording = false;
+                updateRecordingUI(false);
+                stopRecTimer();
+            }
+        }
+
+        function updateRecordingUI(recording) {
+            const btn = document.getElementById('btn-start-rec');
+            const btnText = document.getElementById('rec-btn-text');
+            const indicator = document.getElementById('rec-indicator');
+            const statusText = document.getElementById('rec-status-text');
+
+            if (recording) {
+                btn.className = 'col-span-2 py-2.5 px-4 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-medium shadow-md flex items-center justify-center space-x-2 transition active:scale-95';
+                btnText.innerText = '停止录音';
+                indicator.className = 'w-12 h-12 rounded-full bg-rose-500 text-white flex items-center justify-center mb-2 pulse-recording';
+                statusText.innerText = '正在录音中，请清晰大声朗读...';
+            } else {
+                btn.className = 'col-span-2 py-2.5 px-4 bg-rose-500 hover:bg-rose-600 text-white rounded-xl font-medium shadow-md flex items-center justify-center space-x-2 transition active:scale-95';
+                btnText.innerText = '重新录音';
+                indicator.className = 'w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2';
+                statusText.innerText = '录音完成！你可以播放回放或重新录制';
+            }
+        }
+
+        function startRecTimer() {
+            recordSeconds = 0;
+            document.getElementById('rec-timer').innerText = '00:00';
+            recTimerInterval = setInterval(() => {
+                recordSeconds++;
+                const mins = String(Math.floor(recordSeconds / 60)).padStart(2, '0');
+                const secs = String(recordSeconds % 60).padStart(2, '0');
+                document.getElementById('rec-timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopRecTimer() {
+            clearInterval(recTimerInterval);
+        }
+
+        function enableAudioControls(url) {
+            const playBtn = document.getElementById('btn-play-user-audio');
+            const downloadBtn = document.getElementById('btn-download-audio');
+
+            playBtn.disabled = false;
+            playBtn.className = 'py-2 px-3 bg-brand-50 hover:bg-brand-100 text-brand-600 border border-brand-200 rounded-xl font-medium flex items-center justify-center space-x-1.5 transition active:scale-95 cursor-pointer';
+
+            downloadBtn.removeAttribute('disabled');
+            downloadBtn.href = url;
+            downloadBtn.download = '我的朗读练习.mp3';
+            downloadBtn.className = 'py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium flex items-center justify-center space-x-1.5 transition text-center cursor-pointer';
+        }
+
+        function playUserRecording() {
+            const player = document.getElementById('user-audio-player');
+            if (player && player.src) {
+                player.play();
+            }
+        }
+
+        // Modal Controls
+        function toggleModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.toggle('hidden');
+        }
+    </script>
+</body>
+</html>
