@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHINESE GRADE 9 G1 复习资料 - 线上自批练习</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-page: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #cbd5e1;
+            --correct-bg: #dcfce7;
+            --correct-border: #22c55e;
+            --correct-text: #15803d;
+            --wrong-bg: #fee2e2;
+            --wrong-border: #ef4444;
+            --wrong-text: #b91c1c;
+            --ans-bg: #fefce8;
+            --ans-border: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            line-height: 1.7;
+            padding-top: 76px;
+            padding-bottom: 60px;
+        }
+
+        /* 顶部悬浮计时与操作栏 */
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 64px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+
+        .timer-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 6px 14px;
+            border-radius: 8px;
+        }
+
+        .timer-display {
+            font-family: "Courier New", Courier, monospace;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 82px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.8rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-outline {
+            background-color: #fff;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-outline:hover {
+            background-color: #f8fafc;
+        }
+
+        .btn-ans {
+            background-color: #fffbeb;
+            border: 1px solid #fcd34d;
+            color: #b45309;
+            white-space: nowrap;
+        }
+
+        .btn-ans:hover {
+            background-color: #fef3c7;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 主试卷容器 */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .exam-title {
+            text-align: center;
+            font-size: 1.65rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+            color: #0f172a;
+        }
+
+        /* 学生信息栏 */
+        .student-info {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 20px;
+            margin-bottom: 28px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .info-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .info-input {
+            border: none;
+            border-bottom: 1.5px solid #64748b;
+            padding: 4px 8px;
+            font-size: 1rem;
+            outline: none;
+            width: 200px;
+        }
+
+        .info-input:focus {
+            border-bottom-color: var(--primary);
+        }
+
+        .class-options label {
+            margin-left: 10px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+
+        /* 得分横幅 */
+        .score-banner {
+            display: none;
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 28px;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-banner.show {
+            display: flex;
+        }
+
+        .score-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e3a8a;
+        }
+
+        /* 题型区块 */
+        .section {
+            margin-bottom: 36px;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #0f172a;
+            border-left: 4px solid var(--primary);
+            padding-left: 10px;
+        }
+
+        /* 词库卡片 */
+        .word-bank {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .word-tag {
+            background: #fff;
+            border: 1px solid #cbd5e1;
+            padding: 3px 10px;
+            border-radius: 5px;
+            color: #334155;
+            user-select: all;
+        }
+
+        /* 单题行布局（左侧题目 + 右侧参考答案按钮） */
+        .question-item {
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            margin-bottom: 10px;
+            transition: background 0.2s;
+        }
+
+        .question-item:hover {
+            background-color: #f8fafc;
+        }
+
+        .question-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .question-content {
+            flex: 1;
+            font-size: 1.05rem;
+        }
+
+        .question-side {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 填空输入框 */
+        .blank-input {
+            border: none;
+            border-bottom: 1.5px solid #475569;
+            background: transparent;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            width: 110px;
+            padding: 2px 6px;
+            margin: 0 4px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .blank-input:focus {
+            border-bottom-color: var(--primary);
+            background: #eff6ff;
+        }
+
+        /* 连词成句与造句输入框 */
+        .prompt-words {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+
+        .prompt-words u {
+            text-decoration-thickness: 1.5px;
+            text-underline-offset: 4px;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .full-input {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 1rem;
+            outline: none;
+            margin-top: 4px;
+        }
+
+        .full-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* 批改状态样式 */
+        .is-correct {
+            background-color: var(--correct-bg) !important;
+            border-color: var(--correct-border) !important;
+            color: var(--correct-text) !important;
+        }
+
+        .is-wrong {
+            background-color: var(--wrong-bg) !important;
+            border-color: var(--wrong-border) !important;
+            color: var(--wrong-text) !important;
+        }
+
+        /* 展开的参考答案框 */
+        .answer-drawer {
+            display: none;
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: var(--ans-bg);
+            border-left: 3px solid var(--ans-border);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            color: #854d0e;
+        }
+
+        .answer-drawer.open {
+            display: block;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 造句网格布局 */
+        .sentence-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .char-counter {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-align: right;
+        }
+
+        .char-counter.valid {
+            color: var(--correct-text);
+            font-weight: 600;
+        }
+
+        /* 写作区 */
+        .essay-prompt {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+
+        .essay-textarea {
+            width: 100%;
+            min-height: 220px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 14px;
+            font-size: 1.05rem;
+            line-height: 1.8;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .essay-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px 16px;
+                border-radius: 0;
+            }
+            .sticky-header {
+                padding: 0 12px;
+            }
+            .question-row {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .question-side {
+                align-self: flex-end;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部悬浮计时器与操作栏 -->
+    <header class="sticky-header">
+        <div class="timer-box">
+            <span>⏱️ 用时：</span>
+            <span class="timer-display" id="timerDisplay">00:00:00</span>
+            <button class="btn btn-sm btn-primary" id="toggleTimerBtn" onclick="toggleTimer()">开始计时</button>
+            <button class="btn btn-sm btn-outline" onclick="resetTimer()">重置</button>
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-outline" onclick="toggleAllAnswers()">显示/隐藏全部答案</button>
+            <button class="btn btn-primary" onclick="gradeExam()">提交并自动批改</button>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 class="exam-title">CHINESE GRADE 9 G1 复习资料</h1>
+
+        <!-- 学生信息 -->
+        <div class="student-info">
+            <div class="info-group">
+                <label for="studentName">Name:</label>
+                <input type="text" id="studentName" class="info-input" placeholder="请输入姓名">
+            </div>
+            <div class="info-group class-options">
+                <span>Class:</span>
+                <label><input type="radio" name="studentClass" value="A"> A</label>
+                <label><input type="radio" name="studentClass" value="B"> B</label>
+                <label><input type="radio" name="studentClass" value="C"> C</label>
+                <label><input type="radio" name="studentClass" value="D"> D</label>
+            </div>
+        </div>
+
+        <!-- 客观题批改得分显示区 -->
+        <div class="score-banner" id="scoreBanner">
+            <div class="score-text" id="scoreText">客观题得分：0 / 24</div>
+            <button class="btn btn-sm btn-outline" onclick="resetExam()">清空重做</button>
+        </div>
+
+        <!-- 一、选择正确的词语填空（第一组） -->
+        <section class="section">
+            <h2 class="section-title">一、选择正确的词语填空（第一组）</h2>
+            <div class="word-bank">
+                <span class="word-tag">归属感</span>
+                <span class="word-tag">通报</span>
+                <span class="word-tag">团购</span>
+                <span class="word-tag">开销</span>
+                <span class="word-tag">增进</span>
+                <span class="word-tag">划算</span>
+                <span class="word-tag">计划</span>
+                <span class="word-tag">喜庆</span>
+                <span class="word-tag">营造</span>
+                <span class="word-tag">不如</span>
+                <span class="word-tag">由此</span>
+                <span class="word-tag">暂住</span>
+            </div>
+            <div id="part1-group1"></div>
+        </section>
+
+        <!-- 一、选择正确的词语填空（第二组） -->
+        <section class="section">
+            <h2 class="section-title">二、选择正确的词语填空（第二组）</h2>
+            <div class="word-bank">
+                <span class="word-tag">腾出</span>
+                <span class="word-tag">逃生</span>
+                <span class="word-tag">利大于弊</span>
+                <span class="word-tag">喜好</span>
+                <span class="word-tag">沟通</span>
+                <span class="word-tag">失火</span>
+                <span class="word-tag">捐出</span>
+                <span class="word-tag">访问</span>
+                <span class="word-tag">留意</span>
+                <span class="word-tag">左邻右舍</span>
+            </div>
+            <div id="part1-group2"></div>
+        </section>
+
+        <!-- 三、连词成句 -->
+        <section class="section">
+            <h2 class="section-title">三、连词成句（注意：带下划线的词为句首提示词）</h2>
+            <div id="part3-container"></div>
+        </section>
+
+        <!-- 四、造句，至少 9 个字 -->
+        <section class="section">
+            <h2 class="section-title">四、造句，至少 9 个字</h2>
+            <div class="sentence-grid" id="part4-container"></div>
+        </section>
+
+        <!-- 六、写作，不少于 250 字 -->
+        <section class="section">
+            <h2 class="section-title">六、写作，不少于 250 字</h2>
+            <div class="question-item">
+                <div class="question-row">
+                    <div class="question-content">
+                        <div class="essay-prompt">
+                            <strong>主题：良好的邻里关系会让你的生活更美好</strong><br>
+                            <span style="color: var(--text-muted); font-size: 0.95rem;">（良好的邻里关系会让你的生活更美好。运用举例子来证明这个论点。）</span>
+                        </div>
+                        <textarea id="essayInput" class="essay-textarea" placeholder="请在此处撰写作文（不少于250字）..." oninput="updateEssayCount()"></textarea>
+                        <div class="char-counter" id="essayCounter">当前字数：0 / 250 字</div>
+                    </div>
+                    <div class="question-side">
+                        <button class="btn btn-sm btn-ans" onclick="toggleAnswer('ans-essay')">参考答案</button>
+                    </div>
+                </div>
+                <div class="answer-drawer" id="ans-essay">
+                    <strong>写作思路与范文参考：</strong><br>
+                    1. <strong>开头（提出论点）</strong>：俗话说“远亲不如近邻”，在现代快节奏的生活中，良好的邻里关系不仅能带来温暖，更能让我们的生活变得更加美好与安心。<br>
+                    2. <strong>中间（举例论证）</strong>：例如，上个月我父母临时出差，家里只有我一个人，结果我半夜突然发高烧。住在隔壁的王阿姨得知后，立刻开车送我去医院挂急诊，还给我熬了热粥。正是因为平时两家人经常互相问候、分享美食，才在关键时刻有了这份彼此照应的温情。<br>
+                    3. <strong>结尾（总结升华）</strong>：可见，只要我们多一份微笑与体谅，主动关心左邻右舍，和谐的邻里关系一定会成为生活中最美好的风景。
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // ================= 题库数据 =================
+        const group1Questions = [
+            { id: "g1_1", prefix: "1. 周末咱们一起（", suffix: "）些生活用品吧，人多价格能便宜不少。", answer: "团购" },
+            { id: "g1_2", prefix: "2. 孩子在外地上大学，家里最大的（", suffix: "）就是学费和生活费。", answer: "开销" },
+            { id: "g1_3", prefix: "3. 这次合作（", suffix: "）了两家公司之间的了解和友谊。", answer: "增进" },
+            { id: "g1_4", prefix: "4. 在这个社区住了十年，他对这儿已经有了很深的（", suffix: "）。", answer: "归属感" },
+            { id: "g1_5", prefix: "5. 学校已经（", suffix: "）了本学期的放假安排。", answer: "通报" },
+            { id: "g1_6", prefix: "6. 屋子布置得红红火火，很有（", suffix: "）的气氛。", answer: "喜庆" },
+            { id: "g1_7", prefix: "7. 你（", suffix: "）什么时候回国？", answer: "计划" },
+            { id: "g1_8", prefix: "8. 晚会现场特意（", suffix: "）了温馨热闹的气氛。", answer: "营造" },
+            { id: "g1_9", prefix: "9. 一个人住太冷清，（", suffix: "）找个室友合租。", answer: "不如" },
+            { id: "g1_10", prefix: "10. 公司调整了作息时间，（", suffix: "）通勤路线也跟着变了。", answer: "由此" }
+        ];
+
+        const group2Questions = [
+            { id: "g2_1", prefix: "1. 为了迎接新同事入职，大家合力", suffix: "了一间办公室作为他的工位。", answer: "腾出" },
+            { id: "g2_2", prefix: "2. 遇到火灾等紧急情况时，要保持冷静，沿着安全通道迅速", suffix: "。", answer: "逃生" },
+            { id: "g2_3", prefix: "3. 虽然每天早起练习很辛苦，但长期来看", suffix: "，收获会远大于付出。", answer: "利大于弊" },
+            { id: "g2_4", prefix: "4. 给朋友挑选生日礼物时，最好先了解对方的", suffix: "，才不容易出错。", answer: "喜好" },
+            { id: "g2_5", prefix: "5. 团队合作产生分歧时，及时", suffix: "是化解矛盾最有效的方式。", answer: "沟通" },
+            { id: "g2_6", prefix: "6. 由于电线老化短路，这栋居民楼深夜", suffix: "，幸好消防员及时赶到。", answer: "失火" },
+            { id: "g2_7", prefix: "7. 为了帮助贫困地区的孩子，她", suffix: "了自己收藏的大部分课外书。", answer: "捐出" },
+            { id: "g2_8", prefix: "8. 下周国外的文化交流代表团要来我校", suffix: "，分享教育经验。", answer: "访问" },
+            { id: "g2_9", prefix: "9. 在陌生的城市旅行时，要多", suffix: "身边的标识牌，避免走错路。", answer: "留意" },
+            { id: "g2_10", prefix: "10. 王阿姨为人热情和善，平时总爱帮衬", suffix: "，邻里关系十分融洽。", answer: "左邻右舍" }
+        ];
+
+        const scrambleQuestions = [
+            {
+                id: "s_1",
+                prompt: "1. 社会 / <u>人与人</u> / 关系 / 之间 / 各种各样 / 着 / 的 / 存在",
+                answer: "人与人之间存在着各种各样的社会关系。"
+            },
+            {
+                id: "s_2",
+                prompt: "2. 社区 / 可以 / 通报 / 通过 / <u>居民</u> / 群组 / 迅速 / 信息 / 网络",
+                answer: "居民可以通过社区网络群组迅速通报信息。"
+            },
+            {
+                id: "s_3",
+                prompt: "3. 为邻里 / 新的平台 / 之间的 / <u>社区</u> / 沟通与互动 / 网络群组 / 提供了",
+                answer: "社区网络群组为邻里之间的沟通与互动提供了新的平台。"
+            },
+            {
+                id: "s_4",
+                prompt: "4. 跟着 / 听鸟儿 / <u>让我们</u> / 人士 / 去公园 / 唱歌 / 一起 / 爱鸟",
+                answer: "让我们一起跟着爱鸟人士去公园听鸟儿唱歌。"
+            }
+        ];
+
+        const makeSentenceQuestions = [
+            { id: "m_1", word: "1. 冷漠", example: "面对邻里的求助，我们不应该表现出冷漠的态度。" },
+            { id: "m_2", word: "2. 慷慨解囊", example: "得知灾区群众需要帮助，大家纷纷慷慨解囊捐款捐物。" },
+            { id: "m_3", word: "3. 和睦", example: "我们小区的居民相处得十分和睦，就像一家人一样。" },
+            { id: "m_4", word: "4. 雪中送炭", example: "在我最困难的时候，朋友的帮助真是雪中送炭。" },
+            { id: "m_5", word: "5. 踪影", example: "警察在森林里搜寻了半天，终于发现了失踪者的踪影。" },
+            { id: "m_6", word: "6. 开销", example: "为了节省每月的家庭开销，妈妈决定减少外出就餐的次数。" }
+        ];
+
+        // ================= 渲染页面题目 =================
+        function renderFillBlanks(containerId, list) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = list.map(q => `
+                <div class="question-item" id="item-${q.id}">
+                    <div class="question-row">
+                        <div class="question-content">
+                            ${q.prefix}<input type="text" class="blank-input" id="input-${q.id}" data-answer="${q.answer}" autocomplete="off">${q.suffix}
+                        </div>
+                        <div class="question-side">
+                            <button class="btn btn-sm btn-ans" onclick="toggleAnswer('ans-${q.id}')">参考答案</button>
+                        </div>
+                    </div>
+                    <div class="answer-drawer" id="ans-${q.id}">
+                        <strong>参考答案：</strong>${q.answer}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderScramble() {
+            const container = document.getElementById("part3-container");
+            container.innerHTML = scrambleQuestions.map(q => `
+                <div class="question-item" id="item-${q.id}">
+                    <div class="question-row">
+                        <div class="question-content">
+                            <div class="prompt-words">${q.prompt}</div>
+                            <input type="text" class="full-input" id="input-${q.id}" data-answer="${q.answer}" placeholder="请在此输入完整的句子..." autocomplete="off">
+                        </div>
+                        <div class="question-side">
+                            <button class="btn btn-sm btn-ans" onclick="toggleAnswer('ans-${q.id}')">参考答案</button>
+                        </div>
+                    </div>
+                    <div class="answer-drawer" id="ans-${q.id}">
+                        <strong>参考答案：</strong>${q.answer}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderMakeSentences() {
+            const container = document.getElementById("part4-container");
+            container.innerHTML = makeSentenceQuestions.map(q => `
+                <div class="question-item">
+                    <div class="question-row">
+                        <div class="question-content">
+                            <div class="prompt-words">${q.word}</div>
+                            <input type="text" class="full-input" id="input-${q.id}" placeholder="请用该词语造句（至少9个字）..." oninput="checkSentenceLength('${q.id}')">
+                            <div class="char-counter" id="count-${q.id}">有效汉字/字符数：0 / 9</div>
+                        </div>
+                        <div class="question-side">
+                            <button class="btn btn-sm btn-ans" onclick="toggleAnswer('ans-${q.id}')">参考答案</button>
+                        </div>
+                    </div>
+                    <div class="answer-drawer" id="ans-${q.id}">
+                        <strong>参考例句：</strong>${q.example}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // ================= 交互逻辑 =================
+        // 切换单个参考答案
+        function toggleAnswer(ansId) {
+            const el = document.getElementById(ansId);
+            el.classList.toggle("open");
+        }
+
+        // 显示或隐藏所有答案
+        let allAnswersVisible = false;
+        function toggleAllAnswers() {
+            allAnswersVisible = !allAnswersVisible;
+            document.querySelectorAll(".answer-drawer").forEach(el => {
+                if (allAnswersVisible) {
+                    el.classList.add("open");
+                } else {
+                    el.classList.remove("open");
+                }
+            });
+        }
+
+        // 实时检查造句字数（剔除空格和标点）
+        function checkSentenceLength(id) {
+            const val = document.getElementById(`input-${id}`).value;
+            const cleanText = val.replace(/[\s，。！？、；：“”‘’（）《》,.!?;:'"()\-]/g, "");
+            const counter = document.getElementById(`count-${id}`);
+            counter.textContent = `有效汉字/字符数：${cleanText.length} / 9`;
+            if (cleanText.length >= 9) {
+                counter.classList.add("valid");
+            } else {
+                counter.classList.remove("valid");
+            }
+        }
+
+        // 实时检查作文总字数
+        function updateEssayCount() {
+            const val = document.getElementById("essayInput").value;
+            const cleanText = val.replace(/\s/g, "");
+            const counter = document.getElementById("essayCounter");
+            counter.textContent = `当前字数：${cleanText.length} / 250 字`;
+            if (cleanText.length >= 250) {
+                counter.classList.add("valid");
+            } else {
+                counter.classList.remove("valid");
+            }
+        }
+
+        // 标准化文本用于对比（去除空格及末尾句号）
+        function normalizeText(str) {
+            return str.trim().replace(/\s+/g, "").replace(/[。．.！!？?]+$/g, "");
+        }
+
+        // 自动批改客观题
+        function gradeExam() {
+            // 停止计时
+            if (timerRunning) {
+                toggleTimer();
+            }
+
+            let correctCount = 0;
+            const objectiveQuestions = [
+                ...group1Questions,
+                ...group2Questions,
+                ...scrambleQuestions
+            ];
+
+            objectiveQuestions.forEach(q => {
+                const inputEl = document.getElementById(`input-${q.id}`);
+                const userAns = normalizeText(inputEl.value);
+                const stdAns = normalizeText(q.answer);
+
+                inputEl.classList.remove("is-correct", "is-wrong");
+
+                if (userAns !== "" && userAns === stdAns) {
+                    inputEl.classList.add("is-correct");
+                    correctCount++;
+                } else {
+                    inputEl.classList.add("is-wrong");
+                    // 答错时自动展开该题参考答案方便订正
+                    document.getElementById(`ans-${q.id}`).classList.add("open");
+                }
+            });
+
+            const banner = document.getElementById("scoreBanner");
+            const scoreText = document.getElementById("scoreText");
+            const timeStr = document.getElementById("timerDisplay").textContent;
+            scoreText.textContent = `客观题得分：${correctCount} / ${objectiveQuestions.length} 题（耗时：${timeStr}）`;
+            banner.classList.add("show");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        // 清空重做
+        function resetExam() {
+            if (!confirm("确定要清空所有已填写的答案并重新开始吗？")) return;
+            document.querySelectorAll("input[type='text'], textarea").forEach(el => {
+                el.value = "";
+                el.classList.remove("is-correct", "is-wrong");
+            });
+            document.querySelectorAll(".answer-drawer").forEach(el => el.classList.remove("open"));
+            document.getElementById("scoreBanner").classList.remove("show");
+            makeSentenceQuestions.forEach(q => checkSentenceLength(q.id));
+            updateEssayCount();
+            resetTimer();
+        }
+
+        // ================= 计时器逻辑 =================
+        let secondsElapsed = 0;
+        let timerInterval = null;
+        let timerRunning = false;
+
+        function formatTime(sec) {
+            const hrs = String(Math.floor(sec / 3600)).padStart(2, '0');
+            const mins = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+            const secs = String(sec % 60).padStart(2, '0');
+            return `${hrs}:${mins}:${secs}`;
+        }
+
+        function toggleTimer() {
+            const btn = document.getElementById("toggleTimerBtn");
+            if (timerRunning) {
+                clearInterval(timerInterval);
+                timerRunning = false;
+                btn.textContent = "继续计时";
+            } else {
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    document.getElementById("timerDisplay").textContent = formatTime(secondsElapsed);
+                }, 1000);
+                timerRunning = true;
+                btn.textContent = "暂停";
+            }
+        }
+
+        function resetTimer() {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            secondsElapsed = 0;
+            document.getElementById("timerDisplay").textContent = "00:00:00";
+            document.getElementById("toggleTimerBtn").textContent = "开始计时";
+        }
+
+        // 页面加载初始化
+        window.onload = function() {
+            renderFillBlanks("part1-group1", group1Questions);
+            renderFillBlanks("part1-group2", group2Questions);
+            renderScramble();
+            renderMakeSentences();
+            // 默认自动开启计时
+            toggleTimer();
+        };
+    </script>
+</body>
+</html>
